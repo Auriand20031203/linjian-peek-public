@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,7 +30,7 @@ public class FocusMode {
     private static JSONObject defaultState() {
         JSONObject s = new JSONObject();
         try {
-            s.put("focus_version", "0.3.8.3-public-focus");
+            s.put("focus_version", "0.3.8.4-public-focus");
             s.put("enabled", false);
             s.put("active", false);
             s.put("mode", "strict");
@@ -61,7 +63,7 @@ public class FocusMode {
                 if (!s.has("scope")) s.put("scope", "full_phone");
                 if (!s.has("managed_by_ai")) s.put("managed_by_ai", true);
                 if (!s.has("message_source")) s.put("message_source", "default");
-                s.put("focus_version", "0.3.8.3-public-focus");
+                s.put("focus_version", "0.3.8.4-public-focus");
                 return s;
             }
         } catch (Exception ignored) { }
@@ -122,7 +124,7 @@ public class FocusMode {
         log(s, "开启专注模式到 " + formatLocal(until));
         appendMessage(s, "ai", s.optString("message"), false);
         save(ctx, s);
-        startLockActivity(ctx);
+        forceShowLockActivity(ctx);
         ScreenshotService svc = ScreenshotService.getInstance();
         if (cmd.optBoolean("screen_off", false) && svc != null) svc.doLockScreen();
         return put(new JSONObject(), true, "focus_started until " + s.optString("until_local"));
@@ -268,6 +270,38 @@ public class FocusMode {
             // 直接把专注锁定页拉到前台，由 Activity 覆盖当前界面。
             startLockActivity(ctx);
         } catch (Exception e) { DebugState.append(ctx, "专注模式前台检查异常：" + ScreenshotService.shortMsg(e)); }
+    }
+
+    /**
+     * 远程/MCP 开专注时，命令通常在 CompanionService 的后台轮询线程里执行。
+     * Android 10+ / targetSdk 34 可能会拦截后台 Service 直接拉起 Activity，
+     * 所以这里同时走应用 Context + 无障碍 Service Context，并延迟补拉一次。
+     */
+    public static void forceShowLockActivity(Context ctx) {
+        try {
+            final Context appCtx = ctx == null ? null : ctx.getApplicationContext();
+            Handler main = new Handler(Looper.getMainLooper());
+            if (appCtx != null) {
+                main.post(() -> startLockActivity(appCtx));
+            }
+            final ScreenshotService svc = ScreenshotService.getInstance();
+            if (svc != null) {
+                main.postDelayed(() -> {
+                    try { startLockActivity(svc); }
+                    catch (Exception e) { DebugState.append(svc, "专注锁定页无障碍拉起异常：" + ScreenshotService.shortMsg(e)); }
+                }, 350);
+                main.postDelayed(() -> {
+                    try {
+                        String pkg = ScreenshotService.currentPackage();
+                        if (pkg != null && pkg.trim().length() > 0) onForegroundPackage(svc, pkg);
+                    } catch (Exception e) {
+                        DebugState.append(svc, "专注模式二次前台检查异常：" + ScreenshotService.shortMsg(e));
+                    }
+                }, 900);
+            }
+        } catch (Exception e) {
+            try { if (ctx != null) DebugState.append(ctx, "专注锁定页强制拉起失败：" + ScreenshotService.shortMsg(e)); } catch (Exception ignored) { }
+        }
     }
 
     public static void startLockActivity(Context ctx) {

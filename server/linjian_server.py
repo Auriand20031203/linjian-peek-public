@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""掌心窗公开版 v0.3.8.3 unified server.
+"""掌心窗公开版 v0.3.8.4 unified server.
 
 零依赖标准库版，负责：
 1. 给手机端下发 peek / open_app / back / home / recents / tap / swipe / set_alarm / send_notification 命令；
@@ -26,7 +26,7 @@ from urllib.request import Request, urlopen
 DEFAULT_PORT = 8513
 DEFAULT_KEEP = 3
 MAX_UPLOAD_BYTES = 24 * 1024 * 1024
-VERSION = "0.3.8.3"
+VERSION = "0.3.8.4"
 DEFAULT_DEVICE = os.environ.get("LINJIAN_DEFAULT_DEVICE", "android-phone")
 ACTIVITY_EVENT_LIMIT = 500
 
@@ -563,6 +563,7 @@ class Handler(BaseHTTPRequestHandler):
                 "temporary_screen_break_release": "临时解除应用门禁", "temporary_unlock_app": "临时解除应用门禁", "deny_screen_break_release_request": "拒绝门禁解除", "deny_unlock_request": "拒绝门禁解除",
                 "get_screen_break_state": "查看应用门禁状态", "get_lock_state": "查看应用门禁状态", "list_screen_break_apps": "查看可管理应用", "list_lockable_apps": "查看可管理应用",
                 "add_screen_break_app": "加入门禁管理", "add_locked_app": "加入门禁管理", "remove_locked_app": "移除门禁应用", "set_screen_break_passphrase": "设置门禁口令", "set_emergency_passphrase": "设置门禁口令",
+                "get_focus_status": "查看专注模式", "start_focus_mode": "开启专注模式", "end_focus_mode": "结束专注模式", "set_focus_plan": "设置专注规则", "reply_focus_request": "回复专注留言", "approve_focus_unlock": "批准专注应急", "deny_focus_unlock": "拒绝专注应急",
                 "get_calendar_state": "查看守护日历", "upsert_calendar_event": "更新守护日历",
                 "get_wallet_state": "读取小金库", "get_wallet_month_state": "读取小金库月份", "list_wallet_months": "读取小金库月份", "list_wallet_pending": "读取小金库待处理", "list_wallet_approvals": "读取小金库审批", "add_wallet_record": "添加小金库账单", "submit_wallet_approval": "提交小金库审批", "submit_companion_wallet_request": "陪伴者提交申请", "list_companion_wallet_requests": "查看陪伴者申请结果", "list_wallet_request_results": "查看小金库申请结果", "decide_wallet_approval": "保存小金库处理结果", "save_wallet_request_result": "保存小金库处理结果", "update_wallet_request_result": "保存小金库处理结果", "save_user_wallet_request_result": "保存用户处理结果", "edit_wallet_record": "编辑小金库账单", "delete_wallet_record": "删除小金库账单", "confirm_wallet_record": "确认小金库账单", "get_wallet_rules": "读取小金库规则", "set_wallet_rules": "设置小金库规则", "wallet_approval_request": "小金库即时审批",
                 "get_takeout_state": "读取外卖小助手", "set_takeout_budget": "设置外卖预算", "add_takeout_card": "保存常点外卖", "save_takeout_card": "保存常点外卖", "update_takeout_card": "编辑常点外卖", "remove_takeout_card": "删除常点外卖", "delete_takeout_card": "删除常点外卖", "list_takeout_cards": "查看常点外卖", "list_takeout_meals": "查看常点外卖", "remember_takeout_meal": "记住这道饭", "remember_current_takeout_meal": "记住当前外卖", "suggest_takeout_options": "帮忙挑外卖", "create_takeout_plan": "生成外卖计划", "takeout_wallet_request": "提交外卖申请", "open_takeout_link": "打开外卖链接", "open_takeout_plan": "打开外卖链接", "copy_takeout_note": "复制外卖备注", "record_takeout_order": "记录外卖支出", "prepare_takeout_checkout": "点到付款页", "auto_takeout_checkout": "点到付款页", "get_takeout_checkout_status": "查看外卖进度", "cancel_takeout_checkout": "取消外卖任务",
